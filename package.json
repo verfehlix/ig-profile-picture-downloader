@@ -1,0 +1,30 @@
+{
+  "name": "ig-profile-picture-downloader",
+  "version": "1.0.0",
+  "description": "Easily Download Instagram Profile Pictures in full resolution.",
+  "main": "igppdl.js",
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "commander": "^2.9.0",
+    "html": "^1.0.0",
+    "request": "^2.74.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/verfehlix/ig-profile-picture-downloader.git"
+  },
+  "keywords": [
+    "picture",
+    "instagram",
+    "download",
+    "scraping",
+    "facebook",
+    "profile"
+  ],
+  "author": "verfehlix",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/verfehlix/ig-profile-picture-downloader/issues"
+  },
+  "homepage": "https://github.com/verfehlix/ig-profile-picture-downloader#readme"
+}
