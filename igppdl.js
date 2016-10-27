@@ -7,9 +7,9 @@ var html = require('html');
 
 // commander --> cli params & help screen
 program
-	.version('1.3.3.7')
-	.option('-u, --user [username]', 'Specify the instagram username of your target.')
-	.parse(process.argv);
+    .version('1.3.3.7')
+    .option('-u, --user [username]', 'Specify the instagram username of your target.')
+    .parse(process.argv);
 
 // display welcome message
 console.log("==========================================================");
@@ -29,11 +29,11 @@ var baseUrl = "https://www.instagram.com/";
 // get username from cli params
 var userName;
 if (!program.user) {
-	console.log("No username specified! Use -h to display help!");
-	console.log("Aborting.");
-	return;
+    console.log("No username specified! Use -h to display help!");
+    console.log("Aborting.");
+    return;
 } else {
-	userName = program.user;
+    userName = program.user;
 }
 
 // build full URL
@@ -42,53 +42,86 @@ var fullUrl = baseUrl + userName;
 // make http request to ig page 
 console.log("Starting...");
 request.get(fullUrl, function(error, response, body) {
-	
-	// if no error occured
-	if (!error && response.statusCode == 200) {
+    
+    // if no error occured
+    if (!error && response.statusCode == 200) {
 
-		console.log("Found profile page at  " + fullUrl + "");
-		console.log("Locating profile picture..");
+        console.log("Found profile page at  " + fullUrl + "");
+        console.log("Locating profile picture..");
 
-		// load body into cheerio for parsing
-		var $ = cheerio.load(body);
+        // load body into cheerio for parsing
+        var $ = cheerio.load(body);
 
-		var profilePicUrl = "";
+        var profilePicUrl = "";
 
-		// iterate all meta tags untwil we find the one that contains the profile pic URL
-		$("meta").each(function(i, elem) {
-			if(elem.attribs.property === "og:image") {
-				profilePicUrl = elem.attribs.content;
-				console.log("Profile Picture URL found!");
-			}
-		});
+        // iterate all meta tags untwil we find the one that contains the profile pic URL
+        $("meta").each(function(i, elem) {
+            if(elem.attribs.property === "og:image") {
+                profilePicUrl = elem.attribs.content;
+                console.log("Profile Picture URL found!");
+            }
+        });
 
-		// remove stuff from URL that resizes the picture to get full size picture
-		var profilePicUrl = profilePicUrl.replace("s150x150/","");
+        // remove stuff from URL that resizes the picture to get full size picture
+        var profilePicUrl = profilePicUrl.replace("s150x150/","");
 
-		console.log("Full Size Picture URL: " + profilePicUrl);
-		console.log("Starting Picture Download...");
+        console.log("Full Size Picture URL: " + profilePicUrl);
+        console.log("Starting Picture Download...");
 
-		// download picture from the URL
-		downloadPicture(profilePicUrl,userName, function(){
-			// log if download is done
-			console.log("Done downloading the profile picture for " + userName);
-		});
+        // download picture from the URL
+        downloadPicture(profilePicUrl,userName, function(){
+            // log if download is done
+            console.log("Done downloading the profile picture for " + userName);
+        });
 
 
-	} else {
-		
-		console.log("An error occured.");
-		console.log(error);
-	
-	}
+    } else {
+        
+        console.log("An error occured.");
+        console.log(error);
+    
+    }
 });
 
 
 var downloadPicture = function(uri, filename, callback){
   request.head(uri, function(err, res, body){
     var ending = res.headers['content-type'].split("/")[1];
-    request(uri).pipe(fs.createWriteStream(filename + "." + ending)).on('close', function(){
-    	callback(uri);
+    var fullFileName = filename + "." + ending;
+    fullFileName = getNewFileNameIfFileExists(fullFileName);
+    request(uri).pipe(fs.createWriteStream(fullFileName)).on('close', function(){
+        callback(uri);
     });
   });
 };
+
+
+var getNewFileNameIfFileExists = function(fileName){
+    var userName = fileName.split(".")[0];
+    var ending = fileName.split(".")[1];
+    
+    var newFileName = userName + "." + ending;
+
+    var count = 2;
+
+    while(fileExists(newFileName)){
+        console.log(fileName + " already exists!");
+        newFileName = userName + "_" + count + "." + ending;
+        console.log("New File Name: " + newFileName);
+        count++;
+    }
+
+    return newFileName;
+}
+
+function fileExists(fileName)
+{
+    try
+    {
+        return fs.statSync(fileName).isFile();
+    }
+    catch (err)
+    {
+        return false;
+    }
+}
